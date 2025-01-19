@@ -554,6 +554,20 @@ namespace Solnet.Rpc
             int? dataSize = null, IList<MemCmp> memCmpList = null);
 
         /// <summary>
+        /// Returns sliced accounts owned by the provided program Pubkey.
+        /// <remarks>Accounts must meet all filter criteria to be included in the results.</remarks>
+        /// </summary>
+        /// <param name="pubKey">The program public key.</param>
+        /// <param name="dataOffset">The data slice offset.</param>
+        /// <param name="dataLenght">The dataslice lenght.</param>
+        /// <param name="commitment">The state commitment to consider when querying the ledger state.</param>
+        /// <param name="dataSize">The data size of the account to compare against the program account data.</param>
+        /// <param name="memCmpList">The list of comparisons to match against the program account data.</param>
+        /// <returns>A task which may return a request result holding the context and account info.</returns>
+        Task<RequestResult<List<AccountKeyPair>>> GetProgramAccountsAsync(string pubKey, int dataOffset, int dataLenght, Commitment commitment = Commitment.Finalized,
+            int? dataSize = null, IList<MemCmp> memCmpList = null);
+
+        /// <summary>
         /// Returns all accounts owned by the provided program Pubkey.
         /// <remarks>Accounts must meet all filter criteria to be included in the results.</remarks>
         /// </summary>

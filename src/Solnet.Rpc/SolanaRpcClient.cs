@@ -143,7 +143,7 @@ namespace Solnet.Rpc
             => GetAccountInfoAsync(pubKey, commitment, encoding).Result;
 
 
-        /// <inheritdoc cref="IRpcClient.GetProgramAccountsAsync"/>
+        /// <inheritdoc cref="IRpcClient.GetProgramAccountsAsync(string, int, int, Commitment, int?, IList{MemCmp})"/>
         public async Task<RequestResult<List<AccountKeyPair>>> GetProgramAccountsAsync(string pubKey,
             Commitment commitment = Commitment.Finalized, int? dataSize = null, IList<MemCmp> memCmpList = null)
         {
@@ -162,6 +162,31 @@ namespace Solnet.Rpc
                     ConfigObject.Create(
                         KeyValue.Create("encoding", "base64"),
                         KeyValue.Create("filters", filters),
+                        HandleCommitment(commitment))));
+        }
+
+        /// <inheritdoc cref="IRpcClient.GetProgramAccountsAsync(string, int, int, Commitment, int?, IList{MemCmp})"/>
+        public async Task<RequestResult<List<AccountKeyPair>>> GetProgramAccountsAsync(string pubKey, int dataOffset, int dataLenght,
+            Commitment commitment = Commitment.Finalized, int? dataSize = null, IList<MemCmp> memCmpList = null)
+        {
+            List<object> filters = Parameters.Create(ConfigObject.Create(KeyValue.Create("dataSize", dataSize)));
+            if (memCmpList != null)
+            {
+                filters ??= new List<object>();
+                filters.AddRange(memCmpList.Select(filter => ConfigObject.Create(KeyValue.Create("memcmp",
+                    ConfigObject.Create(KeyValue.Create("offset", filter.Offset),
+                        KeyValue.Create("bytes", filter.Bytes))))));
+            }
+
+            return await SendRequestAsync<List<AccountKeyPair>>("getProgramAccounts",
+                Parameters.Create(
+                    pubKey,
+                    ConfigObject.Create(
+                        KeyValue.Create("encoding", "base64"),
+                        KeyValue.Create("filters", filters),
+                        KeyValue.Create("dataSlice", ConfigObject.Create(
+                            KeyValue.Create("length", dataLenght),
+                            KeyValue.Create("offset", dataOffset))),
                         HandleCommitment(commitment))));
         }
 
@@ -939,6 +964,5 @@ namespace Solnet.Rpc
         /// </summary>
         /// <returns>The id.</returns>
         int IRpcClient.GetNextIdForReq() => _idGenerator.GetNextId();
-
     }
 }
